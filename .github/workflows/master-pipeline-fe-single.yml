@@ -38,7 +38,9 @@ jobs:
     # TODO: Replace OWNER/CICD-Fe_Single-test with your actual GitHub owner/org and repo name
     uses: OWNER/CICD-Fe_Single-test/.github/workflows/master-pipeline-fe-single.yml@main
     with:
-      run_deploy: ${{ inputs.run_deploy || true }}
-      run_promotion: ${{ inputs.run_promotion || true }}
-      dry_run: ${{ inputs.dry_run || false }}
+      # If it's NOT a manual trigger, default to true. If it IS manual, use the exact input.
+      run_deploy: ${{ github.event_name != 'workflow_dispatch' || inputs.run_deploy == true }}
+      run_promotion: ${{ github.event_name != 'workflow_dispatch' || inputs.run_promotion == true }}
+      # If it's NOT a manual trigger, default to false. If it IS manual, use the exact input.
+      dry_run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
     secrets: inherit
