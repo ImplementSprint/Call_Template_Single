@@ -114,14 +114,32 @@ jobs:
       system-dir: ${{ needs.systems-config.outputs.working_dir }}
       system-name: ${{ needs.systems-config.outputs.system_name }}
       enable-security-scan: true
+      enable-sonar: false
     secrets: inherit
+
+  # ══════════════════════════════════════════════════════════════════
+  # SonarCloud Analysis
+  # ══════════════════════════════════════════════════════════════════
+  sonarcloud:
+    name: "SonarCloud Analysis"
+    needs: [frontend, systems-config]
+    if: always() && needs.frontend.result != 'cancelled'
+    uses: ImplementSprint/Central-Template/.github/workflows/sonarcloud-scan.yml@main # <--- This runs your explicit outer scan
+    with:
+      system-name: ${{ needs.systems-config.outputs.system_name }}
+      working-directory: ${{ needs.systems-config.outputs.working_dir }}
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
+      SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+
       
   # ══════════════════════════════════════════════════════════════════
   # Version Tag — TEST
   # ══════════════════════════════════════════════════════════════════
   version-test:
     name: "Version Tag — TEST"
-    needs: [frontend]
+    needs: [frontend, sonarcloud]
     if: >-
       always() &&
       github.ref == 'refs/heads/test' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
@@ -136,7 +154,7 @@ jobs:
   # ══════════════════════════════════════════════════════════════════
   deploy-test:
     name: "TEST — ${{ needs.systems-config.outputs.system_name }}"
-    needs: [frontend, systems-config]
+    needs: [frontend, systems-config, sonarcloud]
     if: >-
       always() &&
       github.ref == 'refs/heads/test' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
@@ -156,7 +174,7 @@ jobs:
   # ══════════════════════════════════════════════════════════════════
   deploy-uat:
     name: "UAT — ${{ needs.systems-config.outputs.system_name }}"
-    needs: [frontend, systems-config]
+    needs: [frontend, systems-config, sonarcloud]
     if: >-
       always() &&
       github.ref == 'refs/heads/uat' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
