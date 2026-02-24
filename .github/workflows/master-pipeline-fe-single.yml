@@ -121,7 +121,7 @@ jobs:
   # ══════════════════════════════════════════════════════════════════
   version-test:
     name: "Version Tag — TEST"
-    needs: [frontend, sonarcloud]
+    needs: [frontend]
     if: >-
       always() &&
       github.ref == 'refs/heads/test' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
@@ -136,7 +136,7 @@ jobs:
   # ══════════════════════════════════════════════════════════════════
   deploy-test:
     name: "TEST — ${{ needs.systems-config.outputs.system_name }}"
-    needs: [frontend, systems-config, sonarcloud]
+    needs: [frontend, systems-config]
     if: >-
       always() &&
       github.ref == 'refs/heads/test' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
