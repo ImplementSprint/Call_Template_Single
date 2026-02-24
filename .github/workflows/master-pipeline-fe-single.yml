@@ -144,7 +144,7 @@ jobs:
   # ══════════════════════════════════════════════════════════════════
   version-test:
     name: "Version Tag — TEST"
-    needs: [frontend, sonarcloud]
+    needs: [frontend, systems-config,sonarcloud]
     if: >-
       always() &&
       github.ref == 'refs/heads/test' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
