@@ -186,6 +186,7 @@ jobs:
       # We pull these directly from the systems-config outputs instead of a matrix
       system-name: ${{ needs.systems-config.outputs.system_name }}
       working-directory: ${{ needs.systems-config.outputs.working_dir }}
+      run-only-on-branch: uat
       # Optional: Pass the live Vercel UAT URL to Selenium
       e2e-base-url: ${{ needs.deploy-uat.outputs.deployment_url }}
 
@@ -299,15 +300,14 @@ jobs:
   # ══════════════════════════════════════════════════════════════════
   create-pr-to-uat:
     name: "Create PR → UAT"
-    needs: [frontend, version-test, deploy-test, systems-config, selenium-e2e]
+    needs: [frontend, version-test, deploy-test, systems-config]
     if: >-
       always() &&
       github.ref == 'refs/heads/test' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
       (github.event_name != 'workflow_dispatch' || github.event.inputs.run_promotion == 'true') &&
       (needs.frontend.result == 'success' || needs.frontend.result == 'skipped') &&
       needs.version-test.result == 'success' &&
-      (needs.deploy-test.result == 'success' || needs.deploy-test.result == 'skipped') &&
-      (needs.selenium-e2e.result == 'success' || needs.selenium-e2e.result == 'skipped')
+      (needs.deploy-test.result == 'success' || needs.deploy-test.result == 'skipped')
     uses: ImplementSprint/CICD-Fe_Single/.github/workflows/promotion.yml@main
     with:
       pipeline-kind: single
@@ -330,13 +330,14 @@ jobs:
   # ══════════════════════════════════════════════════════════════════
   create-pr-to-main:
     name: "Create PR → Main"
-    needs: [frontend, deploy-uat, systems-config]
+    needs: [frontend, deploy-uat, selenium-e2e, systems-config]
     if: >-
       always() &&
       github.ref == 'refs/heads/uat' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
       (github.event_name != 'workflow_dispatch' || github.event.inputs.run_promotion == 'true') &&
       (needs.frontend.result == 'success' || needs.frontend.result == 'skipped') &&
-      (needs.deploy-uat.result == 'success' || needs.deploy-uat.result == 'skipped')
+      (needs.deploy-uat.result == 'success' || needs.deploy-uat.result == 'skipped') &&
+      (needs.selenium-e2e.result == 'success' || needs.selenium-e2e.result == 'skipped')
     uses: ImplementSprint/CICD-Fe_Single/.github/workflows/promotion.yml@main
     with:
       pipeline-kind: single
