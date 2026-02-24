@@ -1,8 +1,7 @@
-/* eslint-disable unicorn/prefer-top-level-await */
-const { Builder, By, until } = require('selenium-webdriver');
-const chrome = require('selenium-webdriver/chrome');
-
 async function runE2E() {
+  const { Builder, By, until } = await import('selenium-webdriver');
+  const chrome = await import('selenium-webdriver/chrome.js');
+
   const baseUrl = process.env.E2E_BASE_URL || 'http://localhost:3000';
 
   const options = new chrome.Options();
